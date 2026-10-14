@@ -4,9 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Clock App</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>My Clock App</h1>
-  <p>Time tracking app. Coming soon!</p>
+  <main>
+    <h1>My Clock App</h1>
+
+    <section class="timer">
+      <input id="description" type="text" placeholder="What are you working on?" autocomplete="off">
+      <div id="clock" class="clock">00:00:00</div>
+      <button id="toggle" class="start">Start</button>
+    </section>
+
+    <p id="last" class="last"></p>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
