@@ -12,6 +12,8 @@
 
     <section class="timer">
       <input id="description" type="text" placeholder="What are you working on?" autocomplete="off">
+      <input id="tags" type="text" placeholder="Tags, e.g. work, study" autocomplete="off">
+      <div id="tag-suggestions" class="tag-list"></div>
       <div id="clock" class="clock">00:00:00</div>
       <button id="toggle" class="start">Start</button>
     </section>
@@ -20,6 +22,7 @@
       <summary>+ Add entry manually</summary>
       <form id="manual-form">
         <input id="manual-description" type="text" placeholder="What did you work on?" autocomplete="off">
+        <input id="manual-tags" type="text" placeholder="Tags, e.g. work, study" autocomplete="off">
         <label>
           Date
           <input id="manual-date" type="date" required>

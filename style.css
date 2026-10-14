@@ -38,6 +38,41 @@ input {
   border-radius: 8px;
 }
 
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-list:empty {
+  display: none;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #ddf4ff;
+  color: #0969da;
+  font-size: 0.8rem;
+}
+
+button.tag {
+  width: auto;
+  padding: 6px 12px;
+  font-weight: normal;
+  border: 1px solid #b6e3ff;
+}
+
+button.tag.selected {
+  background: #0969da;
+  color: #fff;
+}
+
+.entry .tag-list {
+  margin-top: 4px;
+}
+
 .clock {
   font-size: 3rem;
   font-variant-numeric: tabular-nums;

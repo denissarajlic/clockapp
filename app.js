@@ -4,18 +4,21 @@ const STORAGE_KEY = "runningTimer";
 const ENTRIES_KEY = "entries";
 
 const descriptionInput = document.getElementById("description");
+const tagsInput = document.getElementById("tags");
+const tagSuggestions = document.getElementById("tag-suggestions");
 const clock = document.getElementById("clock");
 const toggleButton = document.getElementById("toggle");
 const daysList = document.getElementById("days");
 const emptyMessage = document.getElementById("empty");
 const manualForm = document.getElementById("manual-form");
 const manualDescription = document.getElementById("manual-description");
+const manualTags = document.getElementById("manual-tags");
 const manualDate = document.getElementById("manual-date");
 const manualStart = document.getElementById("manual-start");
 const manualEnd = document.getElementById("manual-end");
 const manualError = document.getElementById("manual-error");
 
-let running = null; // { start: timestamp, description: text } while the timer runs
+let running = null; // { start, description, tags } while the timer runs
 let tick = null;
 let entries = JSON.parse(localStorage.getItem(ENTRIES_KEY) || "[]");
 
@@ -46,6 +49,57 @@ function formatDay(timestamp) {
     month: "short",
     year: "numeric",
   });
+}
+
+// "work, Study ,work" -> ["work", "study"]
+function parseTags(text) {
+  const tags = text
+    .split(",")
+    .map((tag) => tag.trim().toLowerCase())
+    .filter((tag) => tag !== "");
+  return [...new Set(tags)];
+}
+
+// Every tag used so far, most used first.
+function allTags() {
+  const counts = new Map();
+  for (const entry of entries) {
+    for (const tag of entry.tags || []) {
+      counts.set(tag, (counts.get(tag) || 0) + 1);
+    }
+  }
+  return [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a));
+}
+
+function renderTagList(tags) {
+  const list = document.createElement("div");
+  list.className = "tag-list";
+  for (const tag of tags) {
+    const chip = document.createElement("span");
+    chip.className = "tag";
+    chip.textContent = tag;
+    list.append(chip);
+  }
+  return list;
+}
+
+// Buttons under the timer for tags used before. Tapping one adds or removes it.
+function renderTagSuggestions() {
+  tagSuggestions.innerHTML = "";
+  const selected = parseTags(tagsInput.value);
+
+  for (const tag of allTags()) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = selected.includes(tag) ? "tag selected" : "tag";
+    button.textContent = tag;
+    button.addEventListener("click", () => {
+      const tags = selected.includes(tag) ? selected.filter((t) => t !== tag) : [...selected, tag];
+      tagsInput.value = tags.join(", ");
+      tagsInput.dispatchEvent(new Event("input"));
+    });
+    tagSuggestions.append(button);
+  }
 }
 
 function saveEntries() {
@@ -85,7 +139,7 @@ function renderEntry(entry) {
   time.className = "entry-time";
   time.textContent = `${formatTime(entry.start)} – ${formatTime(entry.end)}`;
 
-  main.append(description, time);
+  main.append(description, time, renderTagList(entry.tags || []));
 
   const duration = document.createElement("div");
   duration.className = "entry-duration";
@@ -131,6 +185,8 @@ function renderHistory() {
     day.append(header, ...dayEntries.map(renderEntry));
     daysList.append(day);
   }
+
+  renderTagSuggestions();
 }
 
 function updateClock() {
@@ -144,7 +200,11 @@ function showRunning() {
 }
 
 function startTimer() {
-  running = { start: Date.now(), description: descriptionInput.value.trim() };
+  running = {
+    start: Date.now(),
+    description: descriptionInput.value.trim(),
+    tags: parseTags(tagsInput.value),
+  };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(running));
   tick = setInterval(updateClock, 1000);
   showRunning();
@@ -154,6 +214,7 @@ function stopTimer() {
   addEntry({
     id: newId(),
     description: running.description || "(no description)",
+    tags: running.tags || [],
     start: running.start,
     end: Date.now(),
   });
@@ -162,6 +223,8 @@ function stopTimer() {
   localStorage.removeItem(STORAGE_KEY);
   clearInterval(tick);
   descriptionInput.value = "";
+  tagsInput.value = "";
+  renderTagSuggestions();
   showRunning();
 }
 
@@ -173,12 +236,19 @@ toggleButton.addEventListener("click", () => {
   }
 });
 
-// Keep the description up to date if it is changed while the timer runs.
-descriptionInput.addEventListener("input", () => {
+// Keep the description and tags up to date if they are changed while the timer runs.
+function updateRunning() {
   if (running) {
     running.description = descriptionInput.value.trim();
+    running.tags = parseTags(tagsInput.value);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(running));
   }
+}
+
+descriptionInput.addEventListener("input", updateRunning);
+tagsInput.addEventListener("input", () => {
+  updateRunning();
+  renderTagSuggestions();
 });
 
 // Today's date as "2026-10-14", the format a date field expects.
@@ -204,11 +274,13 @@ manualForm.addEventListener("submit", (event) => {
   addEntry({
     id: newId(),
     description: manualDescription.value.trim() || "(no description)",
+    tags: parseTags(manualTags.value),
     start,
     end,
   });
 
   manualDescription.value = "";
+  manualTags.value = "";
   manualStart.value = "";
   manualEnd.value = "";
 });
@@ -220,6 +292,7 @@ const saved = localStorage.getItem(STORAGE_KEY);
 if (saved) {
   running = JSON.parse(saved);
   descriptionInput.value = running.description;
+  tagsInput.value = (running.tags || []).join(", ");
   tick = setInterval(updateClock, 1000);
 }
 showRunning();
