@@ -8,6 +8,12 @@ const clock = document.getElementById("clock");
 const toggleButton = document.getElementById("toggle");
 const daysList = document.getElementById("days");
 const emptyMessage = document.getElementById("empty");
+const manualForm = document.getElementById("manual-form");
+const manualDescription = document.getElementById("manual-description");
+const manualDate = document.getElementById("manual-date");
+const manualStart = document.getElementById("manual-start");
+const manualEnd = document.getElementById("manual-end");
+const manualError = document.getElementById("manual-error");
 
 let running = null; // { start: timestamp, description: text } while the timer runs
 let tick = null;
@@ -44,6 +50,10 @@ function formatDay(timestamp) {
 
 function saveEntries() {
   localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+}
+
+function newId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
 function addEntry(entry) {
@@ -142,7 +152,7 @@ function startTimer() {
 
 function stopTimer() {
   addEntry({
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+    id: newId(),
     description: running.description || "(no description)",
     start: running.start,
     end: Date.now(),
@@ -170,6 +180,40 @@ descriptionInput.addEventListener("input", () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(running));
   }
 });
+
+// Today's date as "2026-10-14", the format a date field expects.
+function todayValue() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+manualForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const start = new Date(`${manualDate.value}T${manualStart.value}`).getTime();
+  const end = new Date(`${manualDate.value}T${manualEnd.value}`).getTime();
+  if (end <= start) {
+    manualError.textContent = "End time must be after start time.";
+    manualError.hidden = false;
+    return;
+  }
+
+  manualError.hidden = true;
+  addEntry({
+    id: newId(),
+    description: manualDescription.value.trim() || "(no description)",
+    start,
+    end,
+  });
+
+  manualDescription.value = "";
+  manualStart.value = "";
+  manualEnd.value = "";
+});
+
+manualDate.value = todayValue();
 
 // If a timer was running when the page was closed, continue it.
 const saved = localStorage.getItem(STORAGE_KEY);

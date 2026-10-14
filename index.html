@@ -16,6 +16,29 @@
       <button id="toggle" class="start">Start</button>
     </section>
 
+    <details class="manual">
+      <summary>+ Add entry manually</summary>
+      <form id="manual-form">
+        <input id="manual-description" type="text" placeholder="What did you work on?" autocomplete="off">
+        <label>
+          Date
+          <input id="manual-date" type="date" required>
+        </label>
+        <div class="times">
+          <label>
+            Start
+            <input id="manual-start" type="time" required>
+          </label>
+          <label>
+            End
+            <input id="manual-end" type="time" required>
+          </label>
+        </div>
+        <p id="manual-error" class="error" hidden></p>
+        <button type="submit" class="start">Add entry</button>
+      </form>
+    </details>
+
     <section class="history">
       <h2>History</h2>
       <p id="empty" class="empty">No entries yet. Start the timer to track your first one.</p>

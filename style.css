@@ -64,6 +64,46 @@ button.stop {
   background: #cf222e;
 }
 
+.manual {
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.manual summary {
+  padding: 14px 16px;
+  font-weight: 600;
+  color: #0969da;
+  cursor: pointer;
+}
+
+.manual form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.manual label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #59636e;
+  flex: 1;
+}
+
+.times {
+  display: flex;
+  gap: 12px;
+}
+
+.error {
+  margin: 0;
+  color: #cf222e;
+}
+
 .history h2 {
   font-size: 1.1rem;
   margin: 28px 0 8px;
