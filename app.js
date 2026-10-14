@@ -195,6 +195,7 @@ function renderHistory() {
 
   renderTagSuggestions();
   renderCalendar();
+  renderActivity();
 }
 
 function updateClock() {
@@ -384,6 +385,154 @@ document.getElementById("cal-today").addEventListener("click", () => {
   calendarMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
   renderCalendar();
 });
+
+// Activity: totals for today, this week and this month, a chart of
+// the week, and where the time went (by tag and by description).
+const PERIOD_KEY = "activityPeriod";
+const periodOptions = document.querySelectorAll(".period-option");
+let activityPeriod = localStorage.getItem(PERIOD_KEY) || "week";
+
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+// Weeks start on Monday.
+function startOfWeek(date) {
+  const day = startOfDay(date);
+  day.setDate(day.getDate() - ((day.getDay() + 6) % 7));
+  return day;
+}
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function entriesSince(date) {
+  return entries.filter((e) => e.start >= date.getTime());
+}
+
+// One row per name: the name and time on top, a bar below.
+function renderBars(container, totals, emptyText) {
+  container.innerHTML = "";
+  const rows = [...totals].sort((a, b) => b[1] - a[1]);
+  if (rows.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = emptyText;
+    container.append(empty);
+    return;
+  }
+
+  const sum = rows.reduce((total, row) => total + row[1], 0);
+  const max = rows[0][1];
+  for (const [name, time] of rows) {
+    const percent = Math.round((time / sum) * 100);
+
+    const row = document.createElement("div");
+    row.title = `${name}: ${formatHours(time)} (${percent}%)`;
+
+    const top = document.createElement("div");
+    top.className = "bar-row-top";
+    const label = document.createElement("span");
+    label.className = "bar-name";
+    label.textContent = name;
+    const value = document.createElement("span");
+    value.className = "bar-value";
+    value.textContent = `${formatHours(time)} · ${percent}%`;
+    top.append(label, value);
+
+    const track = document.createElement("div");
+    track.className = "bar-track";
+    const fill = document.createElement("div");
+    fill.className = "bar-fill";
+    fill.style.width = `${(time / max) * 100}%`;
+    track.append(fill);
+
+    row.append(top, track);
+    container.append(row);
+  }
+}
+
+function renderWeekChart() {
+  const chart = document.getElementById("week-chart");
+  chart.innerHTML = "";
+
+  const monday = startOfWeek(new Date());
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+    days.push({ date, total: totalTime(entriesOn(date)) });
+  }
+  const max = Math.max(...days.map((d) => d.total), 1);
+  const today = new Date().toDateString();
+
+  for (const { date, total } of days) {
+    const name = date.toLocaleDateString("en-GB", { weekday: "short" });
+
+    const column = document.createElement("div");
+    column.className = "week-day";
+    column.title = `${name}: ${formatHours(total)}`;
+
+    const value = document.createElement("div");
+    value.className = "week-value";
+    value.textContent = total > 0 ? formatHours(total) : "";
+
+    const track = document.createElement("div");
+    track.className = "week-track";
+    const bar = document.createElement("div");
+    bar.className = "week-bar";
+    bar.style.height = `${(total / max) * 100}%`;
+    track.append(bar);
+
+    const label = document.createElement("div");
+    label.className = date.toDateString() === today ? "week-label today" : "week-label";
+    label.textContent = name;
+
+    column.append(value, track, label);
+    chart.append(column);
+  }
+}
+
+function renderActivity() {
+  const now = new Date();
+  document.getElementById("stat-today").textContent = formatHours(totalTime(entriesOn(now)));
+  document.getElementById("stat-week").textContent = formatHours(totalTime(entriesSince(startOfWeek(now))));
+  document.getElementById("stat-month").textContent = formatHours(totalTime(entriesSince(startOfMonth(now))));
+
+  renderWeekChart();
+
+  for (const option of periodOptions) {
+    option.classList.toggle("active", option.dataset.period === activityPeriod);
+  }
+  const since = { week: startOfWeek(now), month: startOfMonth(now), all: new Date(0) }[activityPeriod];
+  const periodEntries = entriesSince(since);
+
+  const byTag = new Map();
+  const byDescription = new Map();
+  for (const entry of periodEntries) {
+    const time = entry.end - entry.start;
+    const tags = entry.tags && entry.tags.length > 0 ? entry.tags : ["(no tag)"];
+    for (const tag of tags) {
+      byTag.set(tag, (byTag.get(tag) || 0) + time);
+    }
+    byDescription.set(entry.description, (byDescription.get(entry.description) || 0) + time);
+  }
+
+  renderBars(document.getElementById("tag-chart"), byTag, "Nothing tracked in this period.");
+  renderBars(
+    document.getElementById("top-activities"),
+    [...byDescription].sort((a, b) => b[1] - a[1]).slice(0, 5),
+    "Nothing tracked in this period."
+  );
+}
+
+for (const option of periodOptions) {
+  option.addEventListener("click", () => {
+    activityPeriod = option.dataset.period;
+    localStorage.setItem(PERIOD_KEY, activityPeriod);
+    renderActivity();
+  });
+}
 
 // Menu: show one view (Timer, Calendar or Activity) at a time
 // and remember which one was open last.

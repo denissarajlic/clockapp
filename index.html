@@ -78,7 +78,33 @@
 
     <section id="view-activity" class="view" hidden>
       <h1>Activity</h1>
-      <p class="empty">Coming soon.</p>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Today</div><div id="stat-today" class="stat-value"></div></div>
+        <div class="stat"><div class="stat-label">This week</div><div id="stat-week" class="stat-value"></div></div>
+        <div class="stat"><div class="stat-label">This month</div><div id="stat-month" class="stat-value"></div></div>
+      </div>
+
+      <section class="card">
+        <h2>This week by day</h2>
+        <div id="week-chart" class="week-chart"></div>
+      </section>
+
+      <div class="period" role="group" aria-label="Period">
+        <button class="period-option" data-period="week">Week</button>
+        <button class="period-option" data-period="month">Month</button>
+        <button class="period-option" data-period="all">All time</button>
+      </div>
+
+      <section class="card">
+        <h2>Time by tag</h2>
+        <div id="tag-chart" class="bars"></div>
+      </section>
+
+      <section class="card">
+        <h2>Top activities</h2>
+        <div id="top-activities" class="bars"></div>
+      </section>
     </section>
   </main>
 
