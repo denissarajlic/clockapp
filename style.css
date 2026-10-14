@@ -13,11 +13,105 @@ main {
   max-width: 480px;
   margin: 0 auto;
   padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  /* Leave room for the menu bar at the bottom of the phone screen. */
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
 h1 {
   font-size: 1.4rem;
   margin: 8px 0 20px;
+}
+
+/* Menu: a bar at the bottom on phones, a left column on bigger screens. */
+.sidebar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  background: #fff;
+  border-top: 1px solid #d0d7de;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.brand {
+  display: none;
+}
+
+button.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: transparent;
+  color: #59636e;
+  border-radius: 0;
+}
+
+button.nav-item.active {
+  color: #0969da;
+}
+
+.nav-icon {
+  font-size: 1.4rem;
+}
+
+@media (min-width: 768px) {
+  body {
+    display: flex;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    flex-direction: column;
+    gap: 4px;
+    width: 220px;
+    height: 100vh;
+    padding: 20px 12px;
+    border-top: none;
+    border-right: 1px solid #d0d7de;
+  }
+
+  .brand {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 0 12px 16px;
+  }
+
+  button.nav-item {
+    flex: none;
+    flex-direction: row;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  button.nav-item:hover {
+    background: #f4f5f7;
+  }
+
+  button.nav-item.active {
+    background: #ddf4ff;
+  }
+
+  .nav-icon {
+    font-size: 1.1rem;
+  }
+
+  main {
+    flex: 1;
+    max-width: 640px;
+    padding: 24px 32px;
+  }
 }
 
 .timer {

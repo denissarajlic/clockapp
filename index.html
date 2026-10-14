@@ -2,50 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>My Clock App</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
-    <h1>My Clock App</h1>
+  <nav class="sidebar">
+    <div class="brand">My Clock App</div>
+    <button class="nav-item" data-view="timer"><span class="nav-icon">⏱</span><span>Timer</span></button>
+    <button class="nav-item" data-view="calendar"><span class="nav-icon">📅</span><span>Calendar</span></button>
+    <button class="nav-item" data-view="activity"><span class="nav-icon">📊</span><span>Activity</span></button>
+  </nav>
 
-    <section class="timer">
-      <input id="description" type="text" placeholder="What are you working on?" autocomplete="off">
-      <input id="tags" type="text" placeholder="Tags, e.g. work, study" autocomplete="off">
-      <div id="tag-suggestions" class="tag-list"></div>
-      <div id="clock" class="clock">00:00:00</div>
-      <button id="toggle" class="start">Start</button>
+  <main>
+    <section id="view-timer" class="view">
+      <h1>Timer</h1>
+
+      <section class="timer">
+        <input id="description" type="text" placeholder="What are you working on?" autocomplete="off">
+        <input id="tags" type="text" placeholder="Tags, e.g. work, study" autocomplete="off">
+        <div id="tag-suggestions" class="tag-list"></div>
+        <div id="clock" class="clock">00:00:00</div>
+        <button id="toggle" class="start">Start</button>
+      </section>
+
+      <details class="manual">
+        <summary>+ Add entry manually</summary>
+        <form id="manual-form">
+          <input id="manual-description" type="text" placeholder="What did you work on?" autocomplete="off">
+          <input id="manual-tags" type="text" placeholder="Tags, e.g. work, study" autocomplete="off">
+          <label>
+            Date
+            <input id="manual-date" type="date" required>
+          </label>
+          <div class="times">
+            <label>
+              Start
+              <input id="manual-start" type="time" required>
+            </label>
+            <label>
+              End
+              <input id="manual-end" type="time" required>
+            </label>
+          </div>
+          <p id="manual-error" class="error" hidden></p>
+          <button type="submit" class="start">Add entry</button>
+        </form>
+      </details>
+
+      <section class="history">
+        <h2>History</h2>
+        <p id="empty" class="empty">No entries yet. Start the timer to track your first one.</p>
+        <div id="days"></div>
+      </section>
     </section>
 
-    <details class="manual">
-      <summary>+ Add entry manually</summary>
-      <form id="manual-form">
-        <input id="manual-description" type="text" placeholder="What did you work on?" autocomplete="off">
-        <input id="manual-tags" type="text" placeholder="Tags, e.g. work, study" autocomplete="off">
-        <label>
-          Date
-          <input id="manual-date" type="date" required>
-        </label>
-        <div class="times">
-          <label>
-            Start
-            <input id="manual-start" type="time" required>
-          </label>
-          <label>
-            End
-            <input id="manual-end" type="time" required>
-          </label>
-        </div>
-        <p id="manual-error" class="error" hidden></p>
-        <button type="submit" class="start">Add entry</button>
-      </form>
-    </details>
+    <section id="view-calendar" class="view" hidden>
+      <h1>Calendar</h1>
+      <p class="empty">Coming soon.</p>
+    </section>
 
-    <section class="history">
-      <h2>History</h2>
-      <p id="empty" class="empty">No entries yet. Start the timer to track your first one.</p>
-      <div id="days"></div>
+    <section id="view-activity" class="view" hidden>
+      <h1>Activity</h1>
+      <p class="empty">Coming soon.</p>
     </section>
   </main>
 

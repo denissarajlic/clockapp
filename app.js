@@ -287,6 +287,27 @@ manualForm.addEventListener("submit", (event) => {
 
 manualDate.value = todayValue();
 
+// Menu: show one view (Timer, Calendar or Activity) at a time
+// and remember which one was open last.
+const VIEW_KEY = "view";
+const navItems = document.querySelectorAll(".nav-item");
+
+function showView(name) {
+  for (const item of navItems) {
+    item.classList.toggle("active", item.dataset.view === name);
+  }
+  for (const view of document.querySelectorAll(".view")) {
+    view.hidden = view.id !== `view-${name}`;
+  }
+  localStorage.setItem(VIEW_KEY, name);
+  window.scrollTo(0, 0);
+}
+
+for (const item of navItems) {
+  item.addEventListener("click", () => showView(item.dataset.view));
+}
+showView(localStorage.getItem(VIEW_KEY) || "timer");
+
 // If a timer was running when the page was closed, continue it.
 const saved = localStorage.getItem(STORAGE_KEY);
 if (saved) {
