@@ -287,6 +287,98 @@ button.stop {
   font-weight: 600;
 }
 
+.calendar {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.cal-title {
+  font-weight: 600;
+}
+
+button.cal-nav {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 1.6rem;
+  background: transparent;
+  color: #1f2328;
+  border-radius: 50%;
+}
+
+button.cal-nav:hover {
+  background: #f4f5f7;
+}
+
+.cal-weekdays,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-weekdays {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #59636e;
+  margin-bottom: 4px;
+}
+
+button.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: transparent;
+  color: #1f2328;
+  border: 2px solid transparent;
+}
+
+button.cal-day.has-time {
+  background: #ddf4ff;
+}
+
+button.cal-day.today {
+  border-color: #0969da;
+}
+
+button.cal-day.selected {
+  background: #0969da;
+  color: #fff;
+}
+
+.cal-hours {
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  min-height: 0.8rem;
+}
+
+button.cal-today {
+  margin-top: 8px;
+  padding: 10px;
+  font-size: 0.95rem;
+  background: #f4f5f7;
+  color: #0969da;
+}
+
+.cal-selected {
+  margin-top: 16px;
+}
+
 button.delete {
   width: 40px;
   height: 40px;

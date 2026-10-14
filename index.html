@@ -59,7 +59,21 @@
 
     <section id="view-calendar" class="view" hidden>
       <h1>Calendar</h1>
-      <p class="empty">Coming soon.</p>
+
+      <section class="calendar">
+        <div class="cal-header">
+          <button id="cal-prev" class="cal-nav" aria-label="Previous month">‹</button>
+          <div id="cal-title" class="cal-title"></div>
+          <button id="cal-next" class="cal-nav" aria-label="Next month">›</button>
+        </div>
+        <div class="cal-weekdays">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+        <div id="cal-grid" class="cal-grid"></div>
+        <button id="cal-today" class="cal-today">Today</button>
+      </section>
+
+      <div id="cal-day" class="cal-selected"></div>
     </section>
 
     <section id="view-activity" class="view" hidden>

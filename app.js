@@ -155,6 +155,27 @@ function renderEntry(entry) {
   return row;
 }
 
+function totalTime(list) {
+  return list.reduce((sum, e) => sum + (e.end - e.start), 0);
+}
+
+// A card with the day's name and total on top, and its entries below.
+function renderDayCard(timestamp, dayEntries) {
+  const day = document.createElement("div");
+  day.className = "day";
+
+  const header = document.createElement("div");
+  header.className = "day-header";
+  const label = document.createElement("span");
+  label.textContent = formatDay(timestamp);
+  const totalLabel = document.createElement("span");
+  totalLabel.textContent = formatDuration(totalTime(dayEntries));
+  header.append(label, totalLabel);
+
+  day.append(header, ...dayEntries.map(renderEntry));
+  return day;
+}
+
 // Show all entries, newest first, grouped by day with a total for each day.
 function renderHistory() {
   daysList.innerHTML = "";
@@ -169,24 +190,11 @@ function renderHistory() {
   }
 
   for (const dayEntries of groups.values()) {
-    const total = dayEntries.reduce((sum, e) => sum + (e.end - e.start), 0);
-
-    const day = document.createElement("div");
-    day.className = "day";
-
-    const header = document.createElement("div");
-    header.className = "day-header";
-    const label = document.createElement("span");
-    label.textContent = formatDay(dayEntries[0].start);
-    const totalLabel = document.createElement("span");
-    totalLabel.textContent = formatDuration(total);
-    header.append(label, totalLabel);
-
-    day.append(header, ...dayEntries.map(renderEntry));
-    daysList.append(day);
+    daysList.append(renderDayCard(dayEntries[0].start, dayEntries));
   }
 
   renderTagSuggestions();
+  renderCalendar();
 }
 
 function updateClock() {
@@ -286,6 +294,96 @@ manualForm.addEventListener("submit", (event) => {
 });
 
 manualDate.value = todayValue();
+
+// Calendar: one month at a time. Each day shows how long you worked;
+// tapping a day shows its entries below the calendar.
+const calendarTitle = document.getElementById("cal-title");
+const calendarGrid = document.getElementById("cal-grid");
+const calendarDay = document.getElementById("cal-day");
+
+let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let selectedDate = new Date();
+
+// 2h 30m -> "2:30"
+function formatHours(ms) {
+  const totalMinutes = Math.floor(ms / 60000);
+  const minutes = String(totalMinutes % 60).padStart(2, "0");
+  return `${Math.floor(totalMinutes / 60)}:${minutes}`;
+}
+
+function entriesOn(date) {
+  const day = date.toDateString();
+  return entries
+    .filter((e) => new Date(e.start).toDateString() === day)
+    .sort((a, b) => a.start - b.start);
+}
+
+function renderCalendar() {
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  calendarTitle.textContent = calendarMonth.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  calendarGrid.innerHTML = "";
+
+  // Weeks start on Monday, so leave empty boxes before the 1st.
+  const blanks = (new Date(year, month, 1).getDay() + 6) % 7;
+  for (let i = 0; i < blanks; i++) {
+    calendarGrid.append(document.createElement("div"));
+  }
+
+  const today = new Date().toDateString();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const total = totalTime(entriesOn(date));
+
+    const cell = document.createElement("button");
+    cell.className = "cal-day";
+    if (total > 0) cell.classList.add("has-time");
+    if (date.toDateString() === today) cell.classList.add("today");
+    if (date.toDateString() === selectedDate.toDateString()) cell.classList.add("selected");
+
+    const number = document.createElement("span");
+    number.textContent = d;
+    const hours = document.createElement("span");
+    hours.className = "cal-hours";
+    hours.textContent = total > 0 ? formatHours(total) : "";
+    cell.append(number, hours);
+
+    cell.addEventListener("click", () => {
+      selectedDate = date;
+      renderCalendar();
+    });
+    calendarGrid.append(cell);
+  }
+
+  renderSelectedDay();
+}
+
+function renderSelectedDay() {
+  calendarDay.innerHTML = "";
+  const dayEntries = entriesOn(selectedDate);
+  const card = renderDayCard(selectedDate.getTime(), dayEntries);
+  if (dayEntries.length === 0) {
+    const nothing = document.createElement("div");
+    nothing.className = "entry empty";
+    nothing.textContent = "Nothing tracked on this day.";
+    card.append(nothing);
+  }
+  calendarDay.append(card);
+}
+
+function changeMonth(step) {
+  calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + step, 1);
+  renderCalendar();
+}
+
+document.getElementById("cal-prev").addEventListener("click", () => changeMonth(-1));
+document.getElementById("cal-next").addEventListener("click", () => changeMonth(1));
+document.getElementById("cal-today").addEventListener("click", () => {
+  selectedDate = new Date();
+  calendarMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  renderCalendar();
+});
 
 // Menu: show one view (Timer, Calendar or Activity) at a time
 // and remember which one was open last.
