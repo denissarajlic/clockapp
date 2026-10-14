@@ -1,14 +1,17 @@
 // The timer remembers when it started, so it keeps counting
 // even if the page is closed and opened again.
 const STORAGE_KEY = "runningTimer";
+const ENTRIES_KEY = "entries";
 
 const descriptionInput = document.getElementById("description");
 const clock = document.getElementById("clock");
 const toggleButton = document.getElementById("toggle");
-const lastEntry = document.getElementById("last");
+const daysList = document.getElementById("days");
+const emptyMessage = document.getElementById("empty");
 
 let running = null; // { start: timestamp, description: text } while the timer runs
 let tick = null;
+let entries = JSON.parse(localStorage.getItem(ENTRIES_KEY) || "[]");
 
 function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -16,6 +19,108 @@ function formatDuration(ms) {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
   return [hours, minutes, seconds].map((n) => String(n).padStart(2, "0")).join(":");
+}
+
+function formatTime(timestamp) {
+  return new Date(timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
+// "Today", "Yesterday", or a date like "Mon, 12 Oct 2026".
+function formatDay(timestamp) {
+  const day = new Date(timestamp).toDateString();
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (day === today.toDateString()) return "Today";
+  if (day === yesterday.toDateString()) return "Yesterday";
+  return new Date(timestamp).toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function saveEntries() {
+  localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+}
+
+function addEntry(entry) {
+  entries.push(entry);
+  saveEntries();
+  renderHistory();
+}
+
+function deleteEntry(id) {
+  const entry = entries.find((e) => e.id === id);
+  if (!confirm(`Delete "${entry.description}"?`)) return;
+  entries = entries.filter((e) => e.id !== id);
+  saveEntries();
+  renderHistory();
+}
+
+function renderEntry(entry) {
+  const row = document.createElement("div");
+  row.className = "entry";
+
+  const main = document.createElement("div");
+  main.className = "entry-main";
+
+  const description = document.createElement("div");
+  description.className = "entry-description";
+  description.textContent = entry.description;
+
+  const time = document.createElement("div");
+  time.className = "entry-time";
+  time.textContent = `${formatTime(entry.start)} – ${formatTime(entry.end)}`;
+
+  main.append(description, time);
+
+  const duration = document.createElement("div");
+  duration.className = "entry-duration";
+  duration.textContent = formatDuration(entry.end - entry.start);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "delete";
+  deleteButton.textContent = "✕";
+  deleteButton.title = "Delete";
+  deleteButton.addEventListener("click", () => deleteEntry(entry.id));
+
+  row.append(main, duration, deleteButton);
+  return row;
+}
+
+// Show all entries, newest first, grouped by day with a total for each day.
+function renderHistory() {
+  daysList.innerHTML = "";
+  emptyMessage.hidden = entries.length > 0;
+
+  const sorted = [...entries].sort((a, b) => b.start - a.start);
+  const groups = new Map();
+  for (const entry of sorted) {
+    const day = new Date(entry.start).toDateString();
+    if (!groups.has(day)) groups.set(day, []);
+    groups.get(day).push(entry);
+  }
+
+  for (const dayEntries of groups.values()) {
+    const total = dayEntries.reduce((sum, e) => sum + (e.end - e.start), 0);
+
+    const day = document.createElement("div");
+    day.className = "day";
+
+    const header = document.createElement("div");
+    header.className = "day-header";
+    const label = document.createElement("span");
+    label.textContent = formatDay(dayEntries[0].start);
+    const totalLabel = document.createElement("span");
+    totalLabel.textContent = formatDuration(total);
+    header.append(label, totalLabel);
+
+    day.append(header, ...dayEntries.map(renderEntry));
+    daysList.append(day);
+  }
 }
 
 function updateClock() {
@@ -36,9 +141,12 @@ function startTimer() {
 }
 
 function stopTimer() {
-  const duration = Date.now() - running.start;
-  const description = running.description || "(no description)";
-  lastEntry.textContent = `Last: ${description} — ${formatDuration(duration)}`;
+  addEntry({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+    description: running.description || "(no description)",
+    start: running.start,
+    end: Date.now(),
+  });
 
   running = null;
   localStorage.removeItem(STORAGE_KEY);
@@ -71,3 +179,4 @@ if (saved) {
   tick = setInterval(updateClock, 1000);
 }
 showRunning();
+renderHistory();

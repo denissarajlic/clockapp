@@ -64,8 +64,71 @@ button.stop {
   background: #cf222e;
 }
 
-.last {
-  margin-top: 16px;
+.history h2 {
+  font-size: 1.1rem;
+  margin: 28px 0 8px;
+}
+
+.empty {
   color: #59636e;
-  text-align: center;
+}
+
+.day {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #eaeef2;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid #eaeef2;
+}
+
+.entry-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-description {
+  overflow-wrap: anywhere;
+}
+
+.entry-time {
+  font-size: 0.85rem;
+  color: #59636e;
+  margin-top: 2px;
+}
+
+.entry-duration {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+button.delete {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 1.1rem;
+  background: transparent;
+  color: #59636e;
+  border-radius: 50%;
+}
+
+button.delete:hover {
+  background: #ffebe9;
+  color: #cf222e;
 }
